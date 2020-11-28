@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bpm.fullname" . }}
+  labels:
+    {{- include "bpm.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  #sessionAffinity does not work in AWS, but it does work in Google, It may work on Nutanix
+  #sessionAffinity: ClientIP
+  selector:
+    {{- include "bpm.selectorLabels" . | nindent 4 }}

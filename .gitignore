@@ -1,0 +1,7 @@
+/helm.exe
+/kubectl.exe
+/*kubectl*.cfg
+/.idea/
+/applications/jenkins/tinytelly-charts/
+/*.pem
+/*.ppk

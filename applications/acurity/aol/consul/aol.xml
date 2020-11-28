@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/aol" reloadable="false" antiJARLocking="true" antiResourceLocking="true" swallowOutput="true">
+	<Parameter name="enableWsHttpDump" value="true" />
+
+    <!-- Email server configuration. -->
+    <Parameter name="emailSmtpHost" value="mailtest.acme.com.au" />
+    <Parameter name="emailSmtpPort" value="25" />
+    <Parameter name="emailAuthenticationRequired" value="false" />
+    <Parameter name="emailAuthenticationPassword" value="" />
+    <Parameter name="emailSSLRequired" value="false" />
+</Context>
+

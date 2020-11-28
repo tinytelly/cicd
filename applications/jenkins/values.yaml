@@ -1,0 +1,172 @@
+master:
+  docker:
+    registry:
+      username: "admin"
+      password: "password"
+      # This is the IP address of the docker image repository
+      url: "JFrog IP Address or DNS"
+
+  image: "tinytelly/jenkins-plus"
+  tag: "0.0.3"
+  numExecutors: 2
+  adminPassword: "admin"
+  # To find the correct id to use for fsGroup see: https://estl.tech/accessing-docker-from-a-kubernetes-pod-68996709c04b and look for 412
+  #fsGroup: 944 is required if running in nutanix karbon
+  #fsGroup: 994
+  #fsGroup: 412 is required if running in google cloud (gcp)
+  #fsGroup: 412
+  #fsGroup: 1950 is required if running in amazon cloud (aws)
+  fsGroup: 1950
+  servicePort: 8080
+  targetPort: 8080
+  serviceType: LoadBalancer
+
+  # List of plugins to install in addition to those listed in master.installPlugins
+  additionalPlugins:
+    - "job-dsl:1.77"
+    - "xml-job-to-job-dsl:0.1.13"
+    - "bitbucket:1.1.24"
+  initScripts:
+    credentials: |-
+      import com.cloudbees.plugins.credentials.impl.*;
+      import com.cloudbees.plugins.credentials.*;
+      import com.cloudbees.plugins.credentials.domains.*;
+      Credentials c = (Credentials) new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,"git-user", "a git-user login", "a_user", "asdf")
+      SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), c)
+      Credentials d = (Credentials) new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,"bitbucket-user", "a bitbucket-user login", "a_user", "asdf")
+      SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), d)
+  JCasC:
+    configScripts:
+      jenkins: |
+        jenkins:
+          systemMessage: "Build CI \n- Create new jobs\n- export the jobs to groovy using 'XML Job To DSL' on the right\n- add the job to helm values.yaml\n- run a helm upgrade to apply the changes as IAC. \n\n"
+      jobs: |
+        jobs:
+          - script: >
+              folder('info')
+          - script: >
+              job("info/verify-jenkins") {
+              	description("This job runs commands to verify the jenkins server is set up correctly to talk to the docker image repository.")
+              	steps {
+              		shell("""
+                      docker version
+
+                      docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_URL
+                      docker pull hello-world
+                      docker tag hello-world $DOCKER_REGISTRY_URL/docker/hello-world
+                      docker push $DOCKER_REGISTRY_URL/docker/hello-world:latest
+                      docker rmi $DOCKER_REGISTRY_URL/docker/hello-world:latest
+                      docker pull $DOCKER_REGISTRY_URL/docker/hello-world:latest
+                      docker run --rm $DOCKER_REGISTRY_URL/docker/hello-world:latest
+                    """)
+              	}
+              }
+          - script: >
+              job("info/verify-bitbucket") {
+              	description("This will run when a commit is made to a bitbucket repo to test the bitbucket plugin.")
+              	scm {
+               	  git {
+               		remote {
+                      url("https://bitbucket.org/m_t_w/iac.git")
+                      credentials("bitbucket-user")
+               		}
+               	  }
+                }
+                triggers{
+                  bitbucketPush()
+                }
+                steps {
+              		shell("""
+                      echo "hello from bitbucket"
+                    """)
+              	}
+              }
+          - script: >
+              job("info/test-dot-net-build") {
+              	description("testing a build and running a dotnet application provided by microsoft.")
+              	scm {
+              		git {
+              			remote {
+              				github("dotnet/dotnet-docker", "https")
+              			}
+              			branch("*/master")
+              		}
+              	}
+                configure {
+                    it / 'properties' / 'com.coravy.hudson.plugins.github.GithubProjectProperty' {
+                         'projectUrl'('https://github.com/dotnet/dotnet-docker/')
+                  }
+                }
+              	steps {
+              		shell("""
+                      cd samples/dotnetapp/
+                      docker build --pull -t dotnetapp .
+                      docker run --rm dotnetapp Hello .NET Core from Docker
+                    """)
+              	}
+              }
+          - script: >
+              folder('applications')
+          - script: >
+              job("applications/aol") {
+                description("Building aol into docker containers.")
+                scm {
+                    git {
+                        remote {
+                          github("tinytelly/full-stack", "https")
+                          credentials("git-user")
+                        }
+                        branch("*/master")
+                    }
+                }
+                configure {
+                  it / 'properties' / 'com.coravy.hudson.plugins.github.GithubProjectProperty' {
+                       'projectUrl'('https://github.com/tinytelly/full-stack.git')
+                  }
+                }
+                steps {
+                    shell("""
+                    cd applications/acurity/aol/
+                    chmod a+x ci.sh
+                    ./ci.sh
+                  """)
+                }
+              }
+          - script: >
+              multibranchPipelineJob('applications/bpm') {
+                  branchSources {
+                      git {
+                          id('bpm')
+                          remote('https://github.com/tinytelly/bpm.git')
+                          credentialsId('git-user')
+                          includes('*')
+                      }
+                  }
+                  orphanedItemStrategy {
+                      discardOldItems {
+                          numToKeep(10)
+                      }
+                  }
+                  triggers {
+                    periodic(1)
+                  }
+              }
+          - script: >
+              multibranchPipelineJob('applications/acme-camunda-bpmn') {
+                  branchSources {
+                      git {
+                          id('acme-camunda-bpmn')
+                          remote('https://github.com/tinytelly/acme-camunda-bpmn.git')
+                          credentialsId('git-user')
+                          includes('*')
+                      }
+                  }
+                  orphanedItemStrategy {
+                      discardOldItems {
+                          numToKeep(10)
+                      }
+                  }
+                  triggers {
+                    periodic(1)
+                  }
+              }

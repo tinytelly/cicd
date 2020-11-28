@@ -1,0 +1,17 @@
+image:
+  repository: $DOCKER_REGISTRY_URL/docker/bpm-worker-service
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0.0"
+
+imagePullSecrets:
+  - name: "docker-image-creds"
+
+podAnnotations:
+  'consul.hashicorp.com/connect-inject': 'true'
+  'consul.hashicorp.com/connect-service': 'bpm-worker-service'
+  'consul.hashicorp.com/connect-service-upstreams': 'bpm:8095'
+
+resources:
+  requests:
+    cpu: 50m

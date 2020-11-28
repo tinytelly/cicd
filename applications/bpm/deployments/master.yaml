@@ -1,0 +1,25 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: bpm
+  annotations:
+    fluxcd.io/automated: "true"
+    filter.fluxcd.io/chart-image: glob:master-*
+spec:
+  releaseName: bpm
+  chart:
+    git: git@github.com:tinytelly/full-stack
+    path: applications/bpm/bpm
+    ref: master
+  values:
+    #Remember an application needs to be able to support HA - you may get session issues as you switch from one server to another - k8s manages this in 'sessionAffinity: ClientIP' on a service.
+    replicaCount: 1
+    service:
+      type: LoadBalancer
+    image:
+      repository: a75fdf51b135f4bd0ab8ad2aeeaaf40d-1155268312.ap-southeast-2.elb.amazonaws.com/docker/bpm
+      tag: master-2020-10-07_05-15-29
+      pullPolicy: Always
+    spring:
+      profile: "development"
