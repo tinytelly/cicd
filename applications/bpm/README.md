@@ -1,5 +1,5 @@
 ### BPM
-Builds and deploys [Camunda BPM](https://www.iress.com/software/superannuation/acurity-online/).
+Builds and deploys [Camunda BPM](https://camunda.com/).
 
 #### To build the docker image for BPM
 There is a prebuilt job in Jenkins for this under <Jenkins Url>/job/applications/job/bpm.
