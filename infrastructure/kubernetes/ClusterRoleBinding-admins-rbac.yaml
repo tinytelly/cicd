@@ -4,7 +4,7 @@ metadata:
   name: blackmoreb-admin-CRB
 subjects:
   - kind: User
-    name: michael.blackmore@mmc.com # AD User Name
+    name: testing@testing.com # AD User Name
     apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
