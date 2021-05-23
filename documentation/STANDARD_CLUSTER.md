@@ -22,7 +22,7 @@ kubectl create secret docker-registry docker-image-creds \
 --docker-server=$DOCKER_REGISTRY_URL \
 --docker-username=$DOCKER_REGISTRY_USERNAME \
 --docker-password=$DOCKER_REGISTRY_PASSWORD \
---docker-email=matt.wood@mmc.com
+--docker-email=testing@testing.com
 ```
 
 ## To register JFrog as an insecure registry

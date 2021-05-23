@@ -38,6 +38,6 @@ echo "export SMTP_USERNAME=no_required_as_we_skip_auth" >> env.sh
 echo "export SMTP_PASSWORD=no_required_as_we_skip_auth" >> env.sh
 echo "export SMTP_AUTH=false" >> env.sh
 echo "export SMTP_STARTTLS=false" >> env.sh
-echo "export SMTP_DEFAULT_SENDER=matt.wood@mmc.com" >> env.sh
+echo "export SMTP_DEFAULT_SENDER=testing@testing.com" >> env.sh
 echo "export SMTP_SUBJECT_PREFIX=OpenIAM notifications" >> env.sh
 
