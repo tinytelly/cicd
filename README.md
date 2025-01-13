@@ -1,6 +1,5 @@
 # Clusters, CI/CD and Automation
 This repository contains all the files required to create clusters, deploy all workloads for a full CI/CD to run automated deployments to clusters.
-s
 
 ![overview](documentation/cluster-design.png)
 
